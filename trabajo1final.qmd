@@ -1,0 +1,714 @@
+---
+title: "Análisis de los factores que influyen en el precio de laptops de diferentes marcas y especificaciones"
+author: 
+  - name: "VALENTINA MONSALVE URREGO"
+  - name: "STEFANNY PAOLA HERRERA ZAPATA"
+  - name: "ANNIE PAOLA SEQUEDA"
+lang : es  
+format:
+  html:
+    toc: true 
+    toc-location: left 
+editor: visual
+theme: slate
+number-sections: true
+editor_options: 
+  chunk_output_type: console
+---
+
+## OBJETIVO GENERAL Y PREGUNTA PRINCIPAL
+
+### ¿Qué características de las laptops (procesador, RAM, almacenamiento, sistema operativo, etc.) tienen mayor impacto en el precio?
+
+Determinar los principales factores que influyen en la variación de precios de las laptops, tomando en cuenta especificaciones técnicas como el procesador, la memoria RAM, el almacenamiento, la tarjeta gráfica, y la duración de la batería, además de aspectos como la marca y el sistema operativo. Este análisis tiene como finalidad identificar las características que más afectan el precio final, para ofrecer una mejor comprensión de las dinámicas de valoración en el mercado y apoyar la toma de decisiones de compradores y vendedores en un entorno competitivo.
+
+## OBJETIVOS ESPECIFICOS Y PREGUNTAS AUXILIARES
+
+### 1. ¿Como impacta el almacenamiento y la cantidad de RAM en el precio de las Laptops de diferentes marcas ?
+
+Determinar cómo el tamaño de almacenamiento y la capacidad de RAM afectan el precio de las laptops.
+
+### 2.¿Que influye mas en el modelo, el sistema operativo o el tipo de procesador en la variacion del precio?
+
+Analizar el efecto del tipo de sistema operativo y procesador en la variación de precios, y cómo estos factores influyen en la percepción del valor de los consumidores.
+
+```{r setup, include=FALSE}
+options(scipen=999)
+```
+
+```{r}
+#| echo: false
+datos <- read.csv("https://raw.githubusercontent.com/valenmonsalveu/TrabajoRLM1/refs/heads/main/laptop.csv", sep = ";")
+View(datos)
+
+```
+
+## INTRODUCCIÓN
+
+El mercado de laptops se caracteriza por su gran diversidad de marcas y especificaciones técnicas que, en conjunto, determinan el valor final de los dispositivos. Para vendedores y compradores, es crucial entender qué factores tienen un mayor impacto en el precio para tomar decisiones informadas. Factores como el procesador, la memoria RAM, el almacenamiento, la tarjeta gráfica y el sistema operativo juegan un papel importante en la valoración de una laptop. A través de herramientas de análisis como la regresión y la minería de datos, se puede obtener una comprensión más profunda de cómo estas características afectan el precio de las laptops en el mercado.
+
+![Caracteristicas a tener en cuenta](Laptops-gamer-asus-hot-sale-2022-2.png){#fig-RH}
+
+### Clasificacion de las variables
+
+| Variable             | Tipo                  | Descripcion                                 |
+|-------------------|-------------------|----------------------------------|
+| Price (\$)           | Cuantitativa continua | Precio de la laptop                         |
+| RAM (GB)             | Cuantitativa continua | Capacidad de memoria RAM                    |
+| Storage (GB)         | Cuantitativa continua | Espacio de almacenamiento en GB             |
+| Screen Size (inches) | Cuantitativa continua | Tamaño de la pantalla en pulgadas           |
+| Weight (kg)          | Cuantitativa continua | Peso de la laptop                           |
+| Battery Life (hours) | Cuantitativa continua | Duración de la batería en horas             |
+| Warranty (years)     | Cuantitativa discreta | Tiempo de garantía en años                  |
+| Brand                | Cualitativa nominal   | Marca de la laptop                          |
+| Model                | Cualitativa nominal   | Modelo específico de la laptop              |
+| Processor            | Cualitativa nominal   | Tipo de procesador (Intel, AMD, etc.)       |
+| Graphics Card        | Cualitativa nominal   | Tipo de tarjeta gráfica (NVIDIA, AMD, etc.) |
+| Operating System     | Cualitativa nominal   | Sistema operativo (Windows, macOS, Linux)   |
+|                      |                       |                                             |
+
+```{r}
+#| echo: false
+library(skimr)
+skim(datos)
+
+```
+
+Las tablas proporcionan información detallada sobre cada variable. Muestran el nombre de la variable y luego calculan diversas medidas descriptivas para cada una, como el promedio, la desviación estándar y otras estadísticas que ayudan a comprender mejor cómo se distribuyen y qué tan dispersos están los datos. Es una forma de explorar y comprender cada variable por separado antes de realizar un análisis más profundo.
+
+## ANÁLISIS EXPLORATORIO
+
+```{r}
+#| echo: false
+datos <- read.csv("https://raw.githubusercontent.com/valenmonsalveu/TrabajoRLM1/refs/heads/main/laptop.csv", sep = ";", dec = ",")
+View(datos)
+
+
+```
+
+```         
+```
+
+Los datos que se analizarán corresponden a `r nrow(datos)`, y estos proporcionan información que permitirá analizar el comportamiento del precio de un computador en base a sus características.
+
+**ANALISIS VARTIABLES CUANTITATIVAS**
+
+Acontinuacion se muestra un analisis de las variables cuantitativas, para esto se utlizo una matriz de gráficos de dispersión y correlacion.
+
+```{r}
+#| label: fig-mpgwt
+var_cuanti <- subset(datos, select = c("RAM", "Storage", "Screen.Size", "Weight", "Battery.Life", "Price", "Warranty"))
+
+library(GGally)
+ggpairs(var_cuanti)
+summary(var_cuanti)
+```
+
+apartir de lo anterior se puede analizar que:
+
+***Precio y RAM***
+
+La correlación entre Precio y RAM es muy baja (0.014), lo que indica una relación lineal casi nula entre estas dos variables, esto sugiere que el aumento en la cantidad de RAM no parece estar directamente asociado con un incremento significativo en el precio.
+
+***Precio y Almacenamiento (Storage)***
+
+La correlación entre Precio y Storage es inversa y también muy baja (-0.004), prácticamente inexistente, esto indica que el almacenamiento no tiene una relación significativa con el precio en este conjunto de datos. Apartir de lo anterior es posible afirmar que dispositivos con diferentes capacidades de almacenamiento no varíen tanto en precio, o que el precio esté determinado principalmente por otras variables
+
+***Precio y Tamaño de Pantalla (Screen Size)***
+
+La correlación entre Precio y Screen Size es negativa (-0.014), aunque extremadamente baja .Esta baja correlación negativa sugiere que el tamaño de pantalla tampoco está fuertemente relacionado con el precio. Esto podría ser un indicio de que, en este dataset, los dispositivos más caros no necesariamente tienen pantallas más grandes o pequeñas.
+
+***Precio y Peso (Weight)***
+
+La correlación entre Precio y Weight es de -0.005, muy cerca de cero, el peso no parece estar asociado con el precio. Esto indica que el peso del dispositivo no es un factor determinante para su precio, lo cual puede ser razonable, ya que el peso no suele ser un factor de gran impacto en el costo de un dispositivo.
+
+***Precio y Duración de la Batería (Battery Life)***
+
+La correlación entre Precio y Battery Life es -0.009, lo cual es insignificante. La duración de la batería tampoco muestra relación con el precio. Esto puede indicar que la variabilidad en la duración de la batería entre dispositivos de distinto precio no es lo suficientemente grande como para afectar el precio de manera significativa, o que la tecnología de la batería es similar entre dispositivos de diferentes gamas de precio.
+
+***Precio y Garantía (Warranty)***
+
+La correlación entre Precio y Warranty es -0.003, también insignificante. Esto indica que la duración de la garantía no tiene una relación importante con el precio en este conjunto de datos. Es posible que la garantía estándar sea similar para la mayoría de los dispositivos, independientemente de su precio.
+
+```         
+```
+
+**ANALISIS VARIABLES CUALITATIVAS.**
+
+continuación se presentan más características de interés para poder determinar el precio del auto, las cuales se mostrarán en gráficos de boxplot.
+
+```{r}
+
+#| warning: false
+#| label: imagen1
+#| fig-cap:  boxplot  que nos va a relacionar la variable dependiente con las independientes cuantitativas y cualitativas.
+#| fig-subcap: 
+#| - "Diagrama de boxplot de precio y Model"
+#| - "Diagrama de boxplot de precio y Brand"
+#| - "Diagrama de boxplot de precio y Processor"
+#| - "Diagrama de boxplot de precio y grahips"
+#| - "Diagrama de boxplot de precio y Operating.System"
+#| layout-ncol: 2
+
+library(ggplot2)
+
+ggplot(datos, aes(x =Model   , y = Price )) +
+  geom_boxplot(shape = 1, size = 0, alpha = 0.2, colour="purple")
+
+ggplot(datos, aes(x = Brand   , y = Price )) +
+  geom_boxplot(shape = 1, size = 0, alpha = 0.2, colour="blue")
+
+ggplot(datos, aes(x =Processor   , y = Price )) +
+  geom_boxplot(shape = 1, size = 0, alpha = 0.2, colour="yellow")
+
+ggplot(datos, aes(x =Graphics   , y = Price)) +
+  geom_boxplot(shape = 1, size = 0, alpha = 0.2, colour="orange")
+
+ggplot(datos, aes(x =Operating.System   , y = Price)) +
+  geom_boxplot(shape = 1, size = 0, alpha = 0.2, colour="pink")
+
+
+```
+
+de lo anterior se puede analizar que:
+
+***Grafico distribución de Precios por Modelo del computador (Model)***
+
+Dado el alto número de modelos, el gráfico de dispersión se ve muy saturado, lo que dificulta distinguir patrones específicos, Los puntos estan distribuidos aleatoriamente a lo largo del eje Y, sin una tendencia clara. Esto podría indicar que no existe una correlación fuerte entre el modelo y el precio, o que los precios son similares a lo largo de varios modelos.
+
+***diagrama de caja y bigotes (o boxplot) de la distribución de precios para diferentes marcas (Brand)***
+
+En términos generales, los precios no parecen variar drásticamente entre las marcas. Aunque hay algunas diferencias en la mediana y en el rango de precios, todas las marcas parecen oscilar en un rango relativamente similar, entre aproximadamente 500 y 3000. Esto sugiere que, aunque cada marca puede tener ligeras variaciones, el rango general de precios se mantiene bastante constante. No hay ninguna marca que se destaque con precios extremadamente bajos o altos en comparación con las demás.
+
+***diagrama de caja y bigotes (o boxplot) de la distribución de precios para dos tipos de procesadores (*****Processor)**
+
+Ambas categorías (Alta y Media/Baja) tienen un rango de precios muy parecido, oscilando entre aproximadamente 1000 y 3000. Esto indica que, aunque se clasifiquen en procesadores de alto rendimiento y de rendimiento medio/bajo, los precios no varían significativamente entre ambas categorías. A nivel general, no parece haber una diferencia sustancial en el precio entre procesadores de alta y media/baja gama.
+
+***diagrama de caja y bigotes (o boxplot) de la distribución de precios para diferentes sistemas operativos(*****Operating.System)**
+
+Los bigotes indican el rango de precios, con todas las categorías de sistemas operativos abarcando aproximadamente de 1000 a 3000. , aunque hay algo de variabilidad, especialmente en la categoría de Linux, las distribuciones de precios entre estos sistemas operativos son bastante similares. . la elección del sistema operativo no parece influir fuertemente en el precio de los dispositivos, y las diferencias en los precios tienden a ser mínimas entre estos sistemas operativos.
+
+***diagrama de caja y bigotes (o boxplot) de la distribución de precios para diferentes tarjetas graficas (*****Graphics)**
+
+La mediana de precios es bastante similar entre los diferentes tipos de tarjetas gráficas, indicando que no hay una gran diferencia en el precio medio de los dispositivos en función de la tarjeta gráfica utilizada. Todas las tarjetas gráficas presentan un rango de precios que va desde aproximadamente 1000 hasta 3000, sin grandes variaciones en este aspecto. Esto sugiere que, el tipo de tarjeta gráfica tampoco tiene un impacto significativo en los precios de los dispositivos.
+
+Para poder realizar el análisis exploratorio, decidimos implementar una comparación entre la variable independiente y las demás. Buscábamos conocer cómo podría comportarse el precio de los computadores con respecto a cada una de las variables que suponemos lo definen.
+
+**Identificar puntos atipicos en cada una de las variables**
+
+```{r}
+boxplot(datos$RAM, horizontal = T)
+boxplot(datos$Storage, horizontal = T)
+boxplot(datos$Screen.Size, horizontal = T)
+boxplot(datos$Weight, horizontal = T)
+boxplot(datos$Battery.Life, horizontal = T)
+boxplot(datos$Warranty, horizontal = T)
+boxplot(datos$Price, horizontal = T)        
+
+```
+
+Es fundamental comenzar evaluando cada variable independiente y la variable dependiente de forma individual para detectar posibles valores extremos. Esta evaluación inicial permite identificar valores que se desvían significativamente del resto, los cuales podrían afectar el rendimiento y la precisión del modelo de regresión lineal múltiple.
+
+Detectar estos valores atípicos de manera temprana proporciona información valiosa sobre la distribución y la variabilidad de cada variable, ayudando a identificar datos erróneos, casos aislados o variaciones poco representativas que pueden distorsionar los resultados
+
+En nuestra base de datos, encontramos un solo valor atípico en la variable de almacenamiento (storage). Después de analizarlo, nos dimos cuenta de que este valor podría ser real y no parece ser un error de recolección de datos. Aunque es un tipo de almacenamiento poco común, puede existir en ciertas situaciones, por lo que decidimos mantenerlo en el conjunto de datos. Al conservar este valor, podemos analizar una variedad más amplia de casos y mejorar la representación de la información en situaciones reales.
+
+## Análisis de regresión lineal múltiple
+
+**paso a paso para ajustar el modelo**
+
+Iniciamos el análisis con un primer modelo que incorporaba todas las variables disponibles. Tras revisarlo y considerar los resultados del análisis descriptivo, identificamos que algunas de estas variables no eran significativas para la predicción del precio. Como resultado, decidimos eliminar la variable "Model". Sin embargo, al validar este nuevo modelo, observamos que no cumplía con los criterios necesarios para una regresión adecuada.
+
+Posteriormente, intentamos aplicar una transformación logarítmica a las variables, pero esta estrategia no mejoró la situación. En un paso siguiente, desarrollamos el modelo 4, donde exploramos interacciones entre variables como "Processor\*Graphics" y continuamos aplicando logaritmos como una forma adicional de transformación. Lamentablemente, esta modificación tampoco resultó en una mejora significativa del modelo.
+
+Luego, intentamos crear un modelo que se centrara en interacciones específicas, como "Processor*Graphics" y "RAM*Storage", pero el resultado fue menos favorable. También construimos un modelo 6 que solo incluía variables numéricas o cuantitativas, pero este enfoque no produjo resultados más satisfactorios. Finalmente, decidimos mantener la estructura del modelo 4, explorando aún más las interacciones entre variables y continuando con el uso de logaritmos. Esta estrategia nos llevó a un nuevo modelo 7, que conservaba la misma estructura que el modelo 4 pero incorporaba más variables, lo que resultó en una mejora del rendimiento del modelo.
+
+Después de todos estos intentos, concluimos que el modelo 7 era el más viable, ya que presentaba el R² más alto. Sin embargo, al analizar el modelo 7, identificamos puntos de influencia que afectaban su desempeño. Al eliminar estos puntos, notamos que el R² mejoraba, lo que nos llevó a decidirnos por el modelo 8 que no incluia puntos de influencia.
+
+**MODELO 1 CON TODAS LAS VARIABLES**
+
+```{r}
+#modelo con los datos completos
+
+m1 <- lm(Price ~ . , data = datos)
+m1
+summary(m1)
+
+#tomamos en cuenta que hay ciertas variables que no nos sirven para la 
+#la explicacion del modelo por esto quitaos la variable modelo
+
+modelo1 <- lm(Price ~ . - Model, data = datos)
+summary(modelo1)
+
+#todas las variables tienen valores p muy altos, por lo cual esto
+#hace que el modelo no tiene relacion clara entre las caracteristicas 
+#de los computadores comparado con el precio. este modelo explica el 0,05%
+#del precio lo cual es muy bajo 
+
+
+alias(modelo1)
+
+#con esto podemos concluir que las variables  GraphicsIntel UHD, GraphicsNVIDIA GTX 1650, 
+#GraphicsNVIDIA RTX 3060, y GraphicsNVIDIA RTX 3070 son cobinaciones lineales
+#de otras variables, por ello decidimos quitarlas del modelo
+
+# Ajustar el modelo sin las variables redundantes
+
+
+
+
+```
+
+***Análisis Modelo 1 con todas las variables***
+
+todas las variables tienen valores p muy altos, por lo cual esto #hace que el modelo no tiene relacion clara entre las caracteristicas de los computadores comparado con el precio. este modelo explica el 0,05% del precio lo cual es muy bajo
+
+**MODELO 2 CON TODAS LAS VARIABLES MENOS MODEL**
+
+```{r}
+modelo2 <- lm(Price ~ . - Model - Graphics, data = datos)
+
+vif(modelo2)
+summary(modelo2)
+
+#segun estos datos el modelo no presenta problemas de multicolinealidad entre las
+#variables dadas
+
+#para realizar el modelo3 vamos a aplicar la funcion logaritmica a algunas variables
+#para intentar mejorar el modelo
+#Varianza constante
+anova(m2)
+library(lmtest)
+bptest(m2)
+
+
+#Normalidad
+datos$residual <- rstandard(m2)
+residuales <- datos$residual
+library(tseries)
+jarque.bera.test(datos$residual)
+
+
+#Independencia
+dwtest(m2)
+
+```
+
+***Análisis Modelo 2 con todas las varibles menos model***
+
+Este modelo excluye la variable "model". El p-value de 0.864 indica que no es significativo, y el R² sugiere un mal ajuste en la variabilidad del precio. La prueba de Jarque-Bera revela un p-value extremadamente bajo, lo que indica que los residuos no son normales. Además, la prueba de Breusch-Pagan muestra un p-value de 0.01982, lo que implica que se rechaza la homocedasticidad.
+
+**MODELO 3 APLICANDO LOGARITMOS**
+
+```{r}
+modelo3 <-lm(data = datos, log(Price) ~ Brand + Processor + log(RAM) + log(Storage)+ log(Screen.Size)+
+          Graphics+Operating.System)
+summary(modelo3)
+vif(modelo3)
+
+#subconjunto cuantitativo del modelo
+cuantitativos <- subset(datos, select = c(RAM, Storage, Screen.Size, Weight, Battery.Life, Price, Warranty))
+pairs(cuantitativos)
+
+#matriz de correlacion 
+library(ggcorrplot)
+
+
+corr_matrix <- round(cor(cuantitativos), 2)
+
+print(corr_matrix)
+
+ggcorrplot(corr_matrix, hc.order = TRUE, type = "lower", lab = TRUE)
+
+#alas correlaciones de este modelo fueron muy bajas, ya que la mayoria de ellas fueron
+#cercanas a 0
+
+#normalidad, homostecidad y varianza del modelo
+residuos <- residuals(modelo3)
+shapiro.test(residuos)
+install.packages("lmtest")
+
+
+plot(fitted(modelo3), residuos, main = "Residuos vs Valores ajustados", xlab = "Valores ajustados", ylab = "Residuos")
+abline(h = 0, col = "red", lwd = 2)
+
+library(lmtest)
+bptest(modelo3)
+
+dwtest(modelo3)
+
+#los residuos no siguen una distribucion normal,  no hay evidencia significativa de
+#heterocedasticidad en los residuos del modelo modelo3, no hay evidencia suficiente para afirmar que los residuos de 
+#tu modelo modelo3 presentan autocorrelación significativa
+
+```
+
+***Analsisi modelo 3 aplicando logaritmo***
+
+Se incorporan logaritmos a las variables cuantitativas. Sin embargo, todos los p-values son mayores a 0.05, indicando falta de significancia. El R² es 0.005525, explicando solo el 0.55% de la variabilidad. Los índices de VIF son bajos, lo que sugiere ausencia de colinealidad. La prueba de Jarque-Bera indica no normalidad de los residuos, y la prueba de Breusch-Pagan sugiere homocedasticidad (p-value de 0.2422). Por otro lado las correlaciones entre las variables predictoras y el precio son bajas, lo que sugiere que estas variables individuales tienen poca asociación directa con el precio en este conjunto de datos.
+
+**MODELO 4 RELACIONANDO VARIABLES Y APLICANDO LOGARITMOS**
+
+```{r}
+#modelo4
+
+
+modelo4 <- lm(log(Price) ~ Brand + Processor * Graphics + log(RAM) * log(Storage) + 
+                log(Screen.Size) + Operating.System, data = datos)
+
+summary(modelo4)
+
+
+library(car)  
+vif(modelo4)
+
+#segun los resultados observados las variables Processor*Graphics estan causando alta 
+#multicolinealidad 
+#como tambien la variable prossesor
+
+datos$`log(RAM)` <- log(datos$RAM)
+datos$`log(Storage)` <- log(datos$Storage)
+datos$`log(Screen.Size)` <- log(datos$Screen.Size)
+
+cuantitativo2 <- lm(log(Price) ~ log(RAM) + log(Storage) + log(Screen.Size) + Weight + Battery.Life, data = datos)
+
+corr_matrix2 <- round(cor(datos[c("log(RAM)", "log(Storage)", "log(Screen.Size)", "Weight", "Battery.Life", "Price")]), 2)
+
+print(corr_matrix2)
+
+library(ggcorrplot) 
+ggcorrplot(corr_matrix2, hc.order = TRUE, type = "lower", lab = TRUE)
+
+#Varianza constante
+anova(modelo4)
+library(lmtest)
+bptest(modelo4)
+#No hay varianza constante
+
+#Normalidad
+datos$residual <- rstandard(modelo4)
+residuales <- datos$residual
+library(tseries)
+jarque.bera.test(datos$residual)
+#No hay normalidad
+
+#Independencia
+dwtest(modelo4)
+
+```
+
+***Analisis Modelo 4 relacionando variables y aplicando logaritmos***
+
+En este modelo se agregó el logaritmo en las variables RAM y Storage, y se establecieron relaciones entre variables como Processor y Graphics. Todos los valores p son mayores a 0.05, lo que indica que ninguna de las variables es estadísticamente significativa. El valor de R² es 0.009483, lo que significa que el modelo explica solo el 0.95% de la variabilidad en el logaritmo del precio. La prueba de Jarque-Bera indica un p-value de menos de 0.00000000000000022, sugiriendo que los residuos no son normales. La prueba de Breusch-Pagan arroja un p-value de 0.226, lo que sugiere que no se rechaza la hipótesis de homocedasticidad. Aunque se cumple la homocedasticidad, la no normalidad de los residuos sugiere que el modelo puede no ser completamente homogéneo. Por otro lado las correlaciones entre las variables predictoras y el precio siguen siendo muy bajas incluso con las variables transformadas logarítmicamente.
+
+**MODELO 5 SE RELACIONARON VARIABLES COMO PROCCESSOR\*GRAPHICS Y RAM\*STOGAE**
+
+```{r}
+
+#modelo5
+
+#modelo 5 se relacionaron variables comoo processor*graphics, la ram se relaciono 
+#con storgae 
+modelo5<- lm(log(Price) ~ Processor * Graphics + RAM * Storage, data = datos)
+
+datos_subconjunto <- datos[c("RAM", "Storage", "Price")]
+
+# Calcular la matriz de correlación
+corr_matrix <- round(cor(datos_subconjunto), 2)
+print(corr_matrix)
+
+
+library(ggcorrplot)
+ggcorrplot(corr_matrix, hc.order = TRUE, type = "lower", lab = TRUE)
+
+
+
+summary(modelo5)
+outlierTest(modelo5)
+qqPlot(residuals(modelo5))
+
+#Varianza constante
+anova(modelo5)
+library(lmtest)
+bptest(modelo5)
+#No hay varianza constante
+
+#Normalidad
+datos$residual <- rstandard(modelo5)
+residuales <- datos$residual
+library(tseries)
+jarque.bera.test(datos$residual)
+#No hay normalidad
+
+#Independencia
+dwtest(modelo5)
+
+outlierTest(modelo5)
+qqPlot(residuals(modelo5))
+
+```
+
+***Analisis Modelo 5 se relacionaron variables como processor\*graphics, la ram se relaciona con storgae***
+
+Se establecen relaciones entre Processor y Graphics, y entre RAM y Storage. Todos los p-values son altos, indicando falta de significancia. El R² es 0.006607, explicando el 0.66% de la variabilidad. La prueba de Jarque-Bera sugiere no normalidad, y la prueba de Breusch-Pagan indica homocedasticidad (p-value de 0.1343). por otro lado La falta de correlación alta entre RAM, Storage y Price sugiere que estos atributos, individualmente, no explican bien el precio.
+
+**MODELO 6 VARIABLES CAUNTITATIVAS**
+
+```{r}
+#modelo 6 
+#solo variables cuantitativas o numericas
+
+modelo6 <- lm(Price ~ RAM+Storage+Screen.Size+Weight+Battery.Life+Warranty , data = datos)
+
+summary (modelo6)
+vif(modelo6)
+
+subconjunto_modelo6 <- datos[c("RAM", "Storage", "Screen.Size", "Weight", "Battery.Life", "Price", "Warranty")]
+
+
+# Crear la matriz de correlación para las variables del modelo
+corr_matrix3 <- round(cor(datos[c("RAM", "Storage", "Screen.Size", "Weight", "Battery.Life", "Price", "Warranty")]), 2)
+
+print(corr_matrix3)
+
+library(ggcorrplot) 
+ggcorrplot(corr_matrix3, hc.order = TRUE, type = "lower", lab = TRUE)
+
+#estas correlaciones dieron muy cercanas a cero, por lo que no mostro signiicancia
+#para este modelo
+
+#Varianza constante
+anova(modelo6)
+library(lmtest)
+bptest(modelo6)
+#No hay varianza constante
+
+#Normalidad
+datos$residual <- rstandard(modelo6)
+residuales <- datos$residual
+library(tseries)
+jarque.bera.test(datos$residual)
+#No hay normalidad
+
+#Independencia
+dwtest(modelo6)
+#No son independientes. 
+```
+
+***Analsis Modelo 6 solo variables cuantitativas***
+
+Este modelo incluye solo variables cuantitativas. Todos los p-values son significativamente altos, y el R² es 0.0005356, lo que indica que el modelo explica menos del 0.06% de la variabilidad. La prueba de Jarque-Bera muestra no normalidad, y la prueba de Breusch-Pagan indica heteroscedasticidad (p-value de 0.03033). La prueba de Durbin-Watson sugiere cierta autocorrelación en los residuos (p-value de 0.06735). Analizandolos valores de correlación tenemos que son muy bajos, lo que sugiere que las variables cuantitativas en la matriz no tienen relaciones significativas entre sí y en el contexto del precio.
+
+**MODELO 7 Y 8 (FINAL)**
+
+```{r}
+#modelo7
+modelo7 <- lm(log(Price) ~ Brand + Processor*Graphics + log(RAM)*log(Storage) + 
+           log(Screen.Size) + Operating.System+ Weight*Battery.Life + Warranty  , data = datos)
+
+
+summary(modelo7)
+vif(modelo7)
+
+
+subconjunto_modelo7 <- datos[c("Price", "RAM", "Storage", "Screen.Size", "Weight", "Battery.Life", "Warranty")]
+
+
+subconjunto_modelo7$log.Price <- log(subconjunto_modelo7$Price)
+subconjunto_modelo7$log.RAM <- log(subconjunto_modelo7$RAM)
+subconjunto_modelo7$log.Storage <- log(subconjunto_modelo7$Storage)
+subconjunto_modelo7$log.Screen.Size <- log(subconjunto_modelo7$Screen.Size)
+
+subconjunto_modelo7 <- subset(subconjunto_modelo7, select = c("log.Price", "log.RAM", "log.Storage", "log.Screen.Size", "Weight", "Battery.Life", "Warranty"))
+
+#matriz de correlacion
+corr_matrix <- round(cor(subconjunto_modelo7[c("log.Price", "log.RAM", "log.Storage", "log.Screen.Size", "Weight", "Battery.Life", "Warranty")]), 2)
+
+print(corr_matrix)
+
+
+#Varianza constante
+anova(modelo7)
+library(lmtest)
+bptest(modelo7)
+#No hay varianza constante
+
+#Normalidad
+datos$residual <- rstandard(modelo7)
+residuales <- datos$residual
+library(tseries)
+jarque.bera.test(datos$residual)
+#No hay normalidad
+
+#Independencia
+dwtest(modelo7)
+#No son independientes. 
+
+#puntos de influencia 
+outlierTest(modelo7)
+#no hay outliers significativos en tu modelo
+
+#Medidas de influencia y eliminación de observaciones influyentes:
+med_infl <- influence.measures(modelo7)
+filas_eliminar <- which(apply(med_infl$is.inf, 1, any))
+datosa <- datos[-filas_eliminar, ]
+
+modelo_final <- lm(log(Price) ~ Brand + Processor * Graphics + log(RAM) * log(Storage) + 
+                log(Screen.Size) + Operating.System + Weight * Battery.Life + Warranty, data = datosa)
+summary(modelo_final)
+
+
+#analisis de resuduales
+datos$Residuals <- rstandard(modelo7)
+plot(datos$Price, datos$Residuals) + abline(h=0)
+
+library(ggplot2)
+ggplot(datos, aes(x=Price, y=Residuals)) + 
+  geom_point() +
+  geom_smooth(method=lm, color="red", se=TRUE)
+
+#verificacion de valores faltantes y duplicados
+nulos_por_columna <- colSums(is.na(datos))
+total_nulos <- sum(is.na(datos))
+total_duplicados <- sum(duplicated(datos))
+
+
+#graficos del modelo final 
+
+plot(modelo_final, which = 2, main = "Normal Q-Q Plot")
+plot(modelo_final, which = 3, main = "Scale-Location Plot")
+plot(modelo_final, which = 5, main = "Residuals vs Leverage")
+
+
+# Transformación de 'Price' fuera del logaritmo para los gráficos
+datosa$Price <- exp(datosa$`log(Price)`)
+
+# 1. Precio vs Brand
+plot(datosa$Brand, datosa$Price, 
+     main = "Precio vs Brand",
+     xlab = "Brand", ylab = "Price")
+
+# 2. Precio vs Processor
+plot(datosa$Processor, datosa$Price, 
+     main = "Precio vs Processor",
+     xlab = "Processor", ylab = "Price")
+
+# 3. Precio vs Graphics
+plot(datosa$Graphics, datosa$Price, 
+     main = "Precio vs Graphics",
+     xlab = "Graphics", ylab = "Price")
+
+# 4. Precio vs RAM
+plot(datosa$RAM, datosa$Price, 
+     main = "Precio vs RAM",
+     xlab = "RAM (GB)", ylab = "Price")
+
+# 5. Precio vs Storage
+plot(datosa$Storage, datosa$Price, 
+     main = "Precio vs Storage",
+     xlab = "Storage (GB)", ylab = "Price")
+
+# 6. Precio vs Screen Size
+plot(datosa$Screen.Size, datosa$Price, 
+     main = "Precio vs Screen Size",
+     xlab = "Screen Size (inches)", ylab = "Price")
+
+# 7. Precio vs Operating System
+plot(datosa$Operating.System, datosa$Price, 
+     main = "Precio vs Operating System",
+     xlab = "Operating System", ylab = "Price")
+
+# 8. Precio vs Weight
+plot(datosa$Weight, datosa$Price, 
+     main = "Precio vs Weight",
+     xlab = "Weight (kg)", ylab = "Price")
+
+# 9. Precio vs Battery Life
+plot(datosa$Battery.Life, datosa$Price, 
+     main = "Precio vs Battery Life",
+     xlab = "Battery Life (hours)", ylab = "Price")
+
+# 10. Precio vs Warranty
+plot(datosa$Warranty, datosa$Price, 
+     main = "Precio vs Warranty",
+     xlab = "Warranty (years)", ylab = "Price")
+
+```
+
+***Modelo 7 se gragaron todas las varibles, menos model y se aplico logaritmos y relaciones entre ciertas variables***
+
+Al analizar este modelo nos encontramos con lo siguiente:
+
+con respecto al valor-p analizamos que La mayoría de los coeficientes tienen valores p superiores a 0.05, lo cual indica que no son estadísticamente significativos. Esto sugiere que las variables explicativas no están contribuyendo de manera relevante a la predicción del precio.
+
+por otro lado el R\^2 es de solo 0.01033, lo que significa que el modelo solo explica aproximadamente el 1% de la variabilidad en el precio. Esto es extremadamente bajo y sugiere que el modelo no está capturando patrones importantes en los datos.
+
+Tambien se tuvo en cuenta aspectos como la colinealidad gracias a la funcion vif, nos dimos cuenta de que la varible processor:graphics, contaba con alta colinealidad, superando a 5, en variables como proccesor, graphics, battery, entre otras
+
+Se analizaron aspectos críticos del modelo de regresión: homocedasticidad, normalidad e independencia de los residuos, utilizando las pruebas de Jarque-Bera, Breusch-Pagan y Durbin-Watson.
+
+*Prueba de Jarque-Bera:* Los resultados mostraron un valor p superior a 0.05, indicando que los residuos no siguen una distribución normal.
+
+*Prueba de Breusch-Pagan:* También presentó un valor p (0,2417) superior a 0.05, lo que sugiere la presencia de heterocedasticidad en los residuos.
+
+*Prueba de Durbin-Watson*: Los resultados indicaron un valor p (0,067 )mayor a 0.05, sugiriendo que no hay independencia en el modelo.
+
+Analizando la matriz de correlaciones tenemos que la mayoría de las correlaciones son muy cercanas a cero, lo que indica que no hay relaciones significativas entre las variables logarítmicas en el contexto de esta matriz.
+
+***Modelo 8 ( Final) misma estructura del modelo 7, pero sin puntos de influencia (modelo elegido)***
+
+En este modelo, se utilizaron los mismos parámetros que en el anterior, pero se eliminaron los puntos de influencia, considerando aspectos como DFFITS y DFBETAS. Aunque los resultados mostraron una ligera mejora, el modelo aún no es estadísticamente significativo, ya que presenta valores p muy altos y un r\^2 que solo explica el 1.5% de la variabilidad en el precio. Sin embargo, decidimos seleccionar este modelo porque, a pesar de sus limitaciones, fue el que obtuvo el mejor r\^2 entre todos los modelos evaluados.
+
+Analisis de graficos de modelo final:
+
+Gráfico Normal Q-Q: Este gráfico muestra que los residuos (errores) del modelo no se distribuyen completamente de forma normal. Los puntos en los extremos se desvían de la línea, lo que sugiere que hay algunos datos atípicos o colas largas. Esto puede hacer que las pruebas y estimaciones del modelo no sean muy confiables.
+
+Gráfico Scale-Location: Este gráfico indica que la variabilidad de los residuos es bastante constante a lo largo de los valores ajustados, lo que sugiere que hay una homocedasticidad aceptable, aunque no perfecta. Hay un poco de dispersión, pero en general, se mantiene bien.
+
+Gráfico Residuals vs Leverage:La mayoría de los puntos están en la parte inferior izquierda, lo que indica que no hay muchas observaciones influyentes. Además, no hay puntos que tengan un impacto excesivo en los resultados, lo que sugiere que el modelo es estable.
+
+## RESULTADOS
+
+### Objetivo general
+
+### ¿Qué características de las laptops (procesador, RAM, almacenamiento, sistema operativo, etc.) tienen mayor impacto en el precio?
+
+No tenemos ninguna variable que tenga algun nivel de significancia en el impacto del precio, a pesar de esto la que tiene el menor valor p de este modelo es la variable battery life. con un coeficiente no significativo (p = 0.1788). con respecto a las variables cualitativas notamos que la marca BrandAsus es la que representa un efecto significativo de este modelo.
+
+## Objetivos especificos
+
+### 1. ¿Como impacta el almacenamiento y la cantidad de RAM en el precio de las Laptops de diferentes marcas ?
+
+log(RAM):
+
+Estimación: -0.036460 Valor p: 0.6967.log(Storage):
+
+Estimación: -0.032795 Valor p: 0.4723
+
+estas dos variables tienen valores p muy altos, lo cual para este modelo hace que su impacto no sea significativo sobre el precio, por lo cual, no hay pruebas convincentes de que la cantidad de RAM y el almacenamiento influyan de manera directa y constante en el precio de las laptops según este modelo. con esto podriamos concluir que aunque estas dos caracteristicas sean elementales a la ora de los consumidores preguntar por el precio de los productos, estas dos variables pueden tener un impacto no lineal, por esta razon el precio se puede estar viendo alterado por otros factores sin importar si la cantidad de ram y almacenamiento incrementa o disminuye
+
+### 2.¿Que influye mas en el modelo, el sistema operativo o el tipo de procesador en la variacion del precio?
+
+Sistema Operativo:
+
+Estimaciones: macOS: 0.030819 (p = 0.1953) Windows 10: -0.028777 (p = 0.2293) Windows 11: -0.039252 (p = 0.0980). Tipo de Procesador:
+
+Estimaciones: AMD Ryzen 7: -0.009663 (p = 0.8757) AMD Ryzen 9: 0.011647 (p = 0.8528) Intel i5: -0.028815 (p = 0.6573) Intel i7: 0.079989 (p = 0.1749) Intel i9: 0.023707 (p = 0.6943)
+
+Sistema Operativo:
+
+Estimaciones: macOS: 0.030819 (p = 0.1953) Windows 10: -0.028777 (p = 0.2293) Windows 11: -0.039252 (p = 0.0980). Tipo de Procesador:
+
+Estimaciones: AMD Ryzen 7: -0.009663 (p = 0.8757) AMD Ryzen 9: 0.011647 (p = 0.8528) Intel i5: -0.028815 (p = 0.6573) Intel i7: 0.079989 (p = 0.1749) Intel i9: 0.023707 (p = 0.6943)
+
+Ninguna de estas dos caracteristicas nos muestra una significancia en el modelo, a pesar de esto el sistema operativo Windows 11 muestra un valor p más bajo (0.0980) que puede indicar una tendencia hacia la significatividad en comparación con el procesador. en los coeficientes del sistema operativo encontramos que macOS muestra un resultado positivo, a pesar de esto no logra tener una relacion significativa. los coeficientes del tipo de procesador son casi nulos o negativos y tampoco logran tener significancia.
+
+## CONCLUSIÓN
+
+El análisis descriptivo inicial identificó variables con correlaciones bajas y que no eran significativas, por otro lado se llevó a cabo un exhaustivo análisis de puntos atípicos para mejorar el ajuste del modelo de regresión lineal. Tambien se exploraron múltiples combinaciones de modelos y se aplicaron diversas estrategias, como la identificación y eliminación de puntos de influencia, la relación de ciertas variables y la aplicación de transformaciones logarítmicas.
+
+Se evaluaron también las variables que podrían ser más relevantes para el modelo y se determinó cuáles podrían eliminarse sin comprometer su integridad. Sin embargo, a pesar de estos esfuerzos, no se logró encontrar un modelo que presentara un buen ajuste o que resultara significativo para explicar la variabilidad en la variable respuesta, que en este caso es el precio. Esto sugiere que, en el contexto de los datos analizados, puede haber factores no cuantificados o complejidades en la relación entre las variables que limitan la capacidad de los modelos de regresión lineal multiple para ofrecer explicaciones satisfactorias sobre el comportamiento del precio de las laptops.
+
+En consecuencia tenemos que este modelo no es efectivo para calcular el precio de las laptops, ya que la mayoría de las variables no muestran evidencia de su impacto en el valor. Cuando todas las variables son cero, el logaritmo del precio es 7.75, lo que equivale a un precio real de aproximadamente 2335.61. Variables como el peso y la duración de la batería tienen coeficientes negativos, lo que sugiere que un aumento en el peso o una disminución en la duración de la batería podrían estar relacionados con precios más bajos, aunque estas variables no son significativas. En el caso de algunas marcas, como Asus, su p-valor es 0.0359, lo que indica que está cerca de ser significativo, pero no lo suficiente como para considerarla un factor importante en la determinación del precio.
+
+La falta de significancia estadística en los valores p y el bajo R² observados en los diferentes modelos indican que las variables seleccionadas no logran captar adecuadamente la complejidad que subyace al precio de los computadores. A pesar de esto, elegimos el último modelo, que presenta el mayor R², alcanzando un valor de 0.015. Esto sugiere que el modelo solo explica aproximadamente el 1.5% de la variabilidad en el precio, lo que resulta insatisfactorio para un análisis estadístico robusto.
