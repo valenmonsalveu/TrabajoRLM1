@@ -32,8 +32,7 @@ Determinar cómo el tamaño de almacenamiento y la capacidad de RAM afectan el p
 
 Analizar el efecto del tipo de sistema operativo y procesador en la variación de precios, y cómo estos factores influyen en la percepción del valor de los consumidores.
 
-```{r setup, include=FALSE}
-options(scipen=999)
+```         
 ```
 
 ```{r}
@@ -52,7 +51,7 @@ El mercado de laptops se caracteriza por su gran diversidad de marcas y especifi
 ### Clasificacion de las variables
 
 | Variable             | Tipo                  | Descripcion                                 |
-|-------------------|-------------------|----------------------------------|
+|------------------|-------------------|-----------------------------------|
 | Price (\$)           | Cuantitativa continua | Precio de la laptop                         |
 | RAM (GB)             | Cuantitativa continua | Capacidad de memoria RAM                    |
 | Storage (GB)         | Cuantitativa continua | Espacio de almacenamiento en GB             |
@@ -83,7 +82,18 @@ Las tablas proporcionan información detallada sobre cada variable. Muestran el 
 datos <- read.csv("https://raw.githubusercontent.com/valenmonsalveu/TrabajoRLM1/refs/heads/main/laptop.csv", sep = ";", dec = ",")
 View(datos)
 
+datos$Brand <- as.factor(datos$Brand)
+datos$Model <- as.factor(datos$Model)
+datos$Processor <- as.factor(datos$Processor)
+datos$Graphics <- as.factor(datos$Graphics)
+datos$Operating.System <- as.factor(datos$Operating.System)
 
+# definir correctamente algunas variables cuantitativas 
+
+datos$Battery.Life <- as.numeric(datos$Battery.Life)
+datos$Weight <- as.numeric(datos$Weight)
+datos$Price <- as.numeric(datos$Price)
+datos$Screen.Size <- as.numeric(datos$Screen.Size)
 ```
 
 ```         
@@ -100,8 +110,9 @@ Acontinuacion se muestra un analisis de las variables cuantitativas, para esto s
 var_cuanti <- subset(datos, select = c("RAM", "Storage", "Screen.Size", "Weight", "Battery.Life", "Price", "Warranty"))
 
 library(GGally)
-ggpairs(var_cuanti)
-summary(var_cuanti)
+ggpairs(var_)cuanti)
+summary(var_cuanti
+ 
 ```
 
 apartir de lo anterior se puede analizar que:
@@ -580,58 +591,7 @@ plot(modelo_final, which = 3, main = "Scale-Location Plot")
 plot(modelo_final, which = 5, main = "Residuals vs Leverage")
 
 
-# Transformación de 'Price' fuera del logaritmo para los gráficos
-datosa$Price <- exp(datosa$`log(Price)`)
 
-# 1. Precio vs Brand
-plot(datosa$Brand, datosa$Price, 
-     main = "Precio vs Brand",
-     xlab = "Brand", ylab = "Price")
-
-# 2. Precio vs Processor
-plot(datosa$Processor, datosa$Price, 
-     main = "Precio vs Processor",
-     xlab = "Processor", ylab = "Price")
-
-# 3. Precio vs Graphics
-plot(datosa$Graphics, datosa$Price, 
-     main = "Precio vs Graphics",
-     xlab = "Graphics", ylab = "Price")
-
-# 4. Precio vs RAM
-plot(datosa$RAM, datosa$Price, 
-     main = "Precio vs RAM",
-     xlab = "RAM (GB)", ylab = "Price")
-
-# 5. Precio vs Storage
-plot(datosa$Storage, datosa$Price, 
-     main = "Precio vs Storage",
-     xlab = "Storage (GB)", ylab = "Price")
-
-# 6. Precio vs Screen Size
-plot(datosa$Screen.Size, datosa$Price, 
-     main = "Precio vs Screen Size",
-     xlab = "Screen Size (inches)", ylab = "Price")
-
-# 7. Precio vs Operating System
-plot(datosa$Operating.System, datosa$Price, 
-     main = "Precio vs Operating System",
-     xlab = "Operating System", ylab = "Price")
-
-# 8. Precio vs Weight
-plot(datosa$Weight, datosa$Price, 
-     main = "Precio vs Weight",
-     xlab = "Weight (kg)", ylab = "Price")
-
-# 9. Precio vs Battery Life
-plot(datosa$Battery.Life, datosa$Price, 
-     main = "Precio vs Battery Life",
-     xlab = "Battery Life (hours)", ylab = "Price")
-
-# 10. Precio vs Warranty
-plot(datosa$Warranty, datosa$Price, 
-     main = "Precio vs Warranty",
-     xlab = "Warranty (years)", ylab = "Price")
 
 ```
 
